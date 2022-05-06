@@ -1,6 +1,7 @@
-package com.example.batch.config;
+package com.example.batch.configuration;
 
 import com.example.batch.model.Product;
+import com.example.batch.mapper.ProductMapper;
 import com.example.batch.service.JsonFileReader;
 import com.example.batch.service.ProductProcessor;
 import com.example.batch.service.ProductWriter;
@@ -16,25 +17,20 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
 
 @Configuration
 @EnableBatchProcessing
-public class BatchConfig {
-
-
-    @Autowired
-    public JobBuilderFactory jobBuilderFactory;
+public class JobConfiguration {
 
     @Autowired
-    public StepBuilderFactory stepBuilderFactory;
+    private JobBuilderFactory jobBuilderFactory;
 
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
 
     @Bean
     public ItemReader<JsonNode> itemReader() {
-        return new JsonFileReader("/home/java/meta_Clothing_Shoes_and_Jewelry.json");
+        return new JsonFileReader();
     }
 
     @Bean
@@ -43,35 +39,26 @@ public class BatchConfig {
     }
 
     @Bean
-    public ItemWriter<Product> itemWriter() {
-        return new ProductWriter();
+    public ItemWriter<Product> itemWriter(ProductMapper productRepository) {
+        return new ProductWriter(productRepository, 1024);
     }
 
     @Bean
     protected Step processProducts(ItemReader<JsonNode> reader, ItemProcessor<JsonNode, Product> processor, ItemWriter<Product> writer) {
-        return stepBuilderFactory.get("processProducts").<JsonNode, Product>chunk(20)
+        return stepBuilderFactory
+                .get("processProducts")
+                .<JsonNode, Product>chunk(512)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
-                .taskExecutor(taskExecutor())
                 .build();
     }
 
     @Bean
-    public Job chunksJob() {
+    public Job chunksJob(Step processProducts) {
         return jobBuilderFactory
                 .get("chunksJob")
-                .start(processProducts(itemReader(), itemProcessor(), itemWriter()))
+                .start(processProducts)
                 .build();
     }
-
-    @Bean
-    public TaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4);
-        executor.setMaxPoolSize(8);
-        executor.setQueueCapacity(20);
-        return executor;
-    }
-
 }

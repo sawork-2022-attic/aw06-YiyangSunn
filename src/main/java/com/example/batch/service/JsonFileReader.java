@@ -2,58 +2,38 @@ package com.example.batch.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.StepExecutionListener;
+import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.ItemReader;
+import org.springframework.core.io.ClassPathResource;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
 
-public class JsonFileReader implements StepExecutionListener, ItemReader<JsonNode> {
+public class JsonFileReader implements ItemReader<JsonNode> {
 
     private BufferedReader reader;
 
     private ObjectMapper objectMapper;
 
-    private String fileName;
-
-    public JsonFileReader(String file) {
-        if (file.matches("^file:(.*)"))
-            file = file.substring(file.indexOf(":") + 1);
-        this.fileName = file;
-    }
-
-    private void initReader() throws FileNotFoundException {
-        File file = new File(fileName);
-        reader = new BufferedReader(new FileReader(file));
-    }
-
-    @Override
-    public void beforeStep(StepExecution stepExecution) {
-    }
-
-    @Override
-    public ExitStatus afterStep(StepExecution stepExecution) {
-        return null;
+    @BeforeStep
+    public void prepare(StepExecution stepExecution) throws Exception {
+        String fileName = stepExecution.getJobParameters().getString("fileName");
+        if (fileName == null) {
+            throw new IllegalArgumentException("missing 'fileName' parameter in JobParameters");
+        }
+        InputStream inputStream = null;
+        try {
+            inputStream = new ClassPathResource(fileName).getInputStream();
+        } catch (FileNotFoundException e) {
+            inputStream = new FileInputStream(fileName);
+        }
+        reader = new BufferedReader(new InputStreamReader(inputStream));
+        objectMapper = new ObjectMapper();
     }
 
     @Override
     public JsonNode read() throws Exception {
-        if (objectMapper == null)
-            objectMapper = new ObjectMapper();
-
-        if (reader == null) {
-            initReader();
-        }
-
         String line = reader.readLine();
-
-        if (line != null)
-            return objectMapper.readTree(reader.readLine());
-        else
-            return null;
+        return line == null ? null : objectMapper.readTree(line);
     }
 }

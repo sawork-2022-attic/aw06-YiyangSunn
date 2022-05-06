@@ -9,13 +9,15 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Product {
 
+    private Long id;
+
+    private String asin;
+
     private String main_cat;
 
     private String title;
 
-    private String asin;
-
-    private List<String> category;
+    private List<String> also_view;
 
     private List<String> imageURLHighRes;
 }
