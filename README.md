@@ -28,7 +28,7 @@ And, of course, always try to make the system run as fast as possible.
 
 * 处理 meta_Sports_and_Outdoors.json 文件需要 27s 左右；一共有 5 个线程
 
-* 过滤掉不完整的数据之后，最终写入 474978 条记录
+* 过滤掉不完整的数据之后，最终写入 474973 条记录
 
 * 稍后将提供一份详细的报告，解释具体实现
 
