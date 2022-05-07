@@ -24,16 +24,16 @@ public class JobRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        long totalTime = 0;
+        long totalTimeElapsed = 0;
         for (String fileName : args) {
             log.info("Start processing file: " + fileName);
             JobExecution jobExecution = jobLauncher.run(job, new JobParameters(Map.of("fileName", new JobParameter(fileName))));
             log.info("Finish processing file: " + fileName);
             long timeElapsed = jobExecution.getEndTime().getTime() - jobExecution.getCreateTime().getTime();
-            log.info("Time elapsed: " + timeElapsed + "ms");
-            totalTime += timeElapsed;
+            log.info("It takes up " + timeElapsed + "ms to process file " + fileName);
+            totalTimeElapsed += timeElapsed;
         }
-        log.info(args.length + " file(s) processed. Total time: " + totalTime + "ms");
+        log.info(args.length + " file(s) processed. Total time: " + totalTimeElapsed + "ms");
         System.exit(0);
     }
 }
