@@ -24,17 +24,45 @@ And, of course, always try to make the system run as fast as possible.
 
 ## 阶段记录
 
-* 目前实现了一个单线程版本，使用 Digital_Music 和 Video_Games 两个数据集
+* 此分支使用 Spring Batch 的 multi-threaded step 实现，使用 Digital_Music 和 Video_Games 两个数据集
 
-* processor 里面过滤或者不过滤缺失数据都需要 20s 左右
+* Sprint Batch 的 Job 对象是单例的，所以 ItemReader 是单例的；又因为 BufferedReader 读取文件是同步操作，所以这里多线程读文件没有线程问题
 
-* 不过滤的话写入大约 14 万条数据；过滤的话写入 7 万多条数据
+* 这个版本比单线程更快，主要原因是一个线程在写入数据库时，另一个线程可以开始读文件，处理下一个 batch
 
-* 硬件环境：笔记本，CPU i7-9750H
+* 硬件环境：笔记本，CPU i7-9750H，总耗时 4389ms，用了 5 个线程（CPU 核数 - 1）
 
-后续将实现多线程版本，并进一步提速。
+* 注意这里读文件是同步操作，增加线程数的收益会越来越小
+
+后续再写一个加速版本，集中多个优化。
 
 ## 运行方法
+
+此项目需要用到 MySQL 数据库，使用如下指令即可准备好运行环境：
+
+```shell
+# 创建运行环境
+sudo docker run -d -p 23306:3306 -e MYSQL_ROOT_PASSWORD='$2a$10$1P5vApro6CGetwiQYGSxF.719D2qz/nbFM8FQpP59dJi85Q/p5n6m' --name mysql mysql
+
+# 与 MySQL 容器进行交互
+# mysql -u root -h 127.0.0.1 -P 23306 -p
+# （输入上面的密码）
+# ......
+# 删除本次运行产生的数据
+# drop database aw06_db;
+# 不删除的话一个文件只能解析一次，否则会报错
+
+# 删除 docker 容器和镜像
+# sudo docker rm mysql; sudo docker rmi mysql
+# 删除没有被任何容器使用的数据卷
+# sudo docker volume prune
+# 注意，如果存在目前没有被容器使用的数据卷，但以后可能被使用的，请不要用上述指令
+# 查看 docker 数据卷
+# sudo docker volume ls
+# sudo docker volume inspect [数据卷名称]
+# sudo ls [数据卷的磁盘路径]
+# 看看里面放的什么内容，是不是 MySQL
+```
 
 目前有两种运行方法：
 
