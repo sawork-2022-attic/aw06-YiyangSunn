@@ -24,11 +24,11 @@ And, of course, always try to make the system run as fast as possible.
 
 ## 阶段记录
 
-* 这个版本还蛮快的，处理 meta_Sports_and_Outdoors.json 文件需要 27s 左右；一共有 5 个线程
+* 这个版本居然并不比 multi-threaded step 快多少，稍后分析原因
+
+* 处理 meta_Sports_and_Outdoors.json 文件需要 27s 左右；一共有 5 个线程
 
 * 过滤掉不完整的数据之后，最终写入 474978 条记录
-
-* multi-threaded step 那个分支有一个并发错误，我待会儿修复
 
 * 稍后将提供一份详细的报告，解释具体实现
 
