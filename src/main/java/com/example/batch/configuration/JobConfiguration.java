@@ -15,10 +15,8 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.task.TaskExecutorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
 
 @Configuration
 @EnableBatchProcessing
@@ -35,7 +33,7 @@ public class JobConfiguration {
 
     @Bean
     public ItemReader<JsonNode> itemReader() {
-        return new JsonFileReader();
+        return new JsonFileReader(8 * 1024, 2);
     }
 
     @Bean
@@ -45,7 +43,7 @@ public class JobConfiguration {
 
     @Bean
     public ItemWriter<Product> itemWriter() {
-        return new ProductWriter(productMapper);
+        return new ProductWriter(productMapper, 2, 8 * 1024);
     }
 
     @Bean
@@ -56,7 +54,6 @@ public class JobConfiguration {
                 .reader(itemReader())
                 .processor(itemProcessor())
                 .writer(itemWriter())
-                .taskExecutor(taskExecutor())
                 .build();
     }
 
@@ -65,15 +62,6 @@ public class JobConfiguration {
         return jobBuilderFactory
                 .get("chunksJob")
                 .start(processProducts())
-                .build();
-    }
-
-    @Bean
-    public TaskExecutor taskExecutor() {
-        return new TaskExecutorBuilder()
-                .corePoolSize(5)
-                .maxPoolSize(5)
-                .queueCapacity(32)
                 .build();
     }
 }

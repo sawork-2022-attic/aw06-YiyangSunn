@@ -24,17 +24,13 @@ And, of course, always try to make the system run as fast as possible.
 
 ## 阶段记录
 
-* 此分支使用 Spring Batch 的 multi-threaded step 实现，使用 Digital_Music 和 Video_Games 两个数据集
+* 这个版本还蛮快的，处理 meta_Sports_and_Outdoors.json 文件需要 27s 左右；一共有 5 个线程
 
-* Sprint Batch 的 Job 对象是单例的，所以 ItemReader 是单例的；又因为 BufferedReader 读取文件是同步操作，所以这里多线程读文件没有线程问题
+* 过滤掉不完整的数据之后，最终写入 474978 条记录
 
-* 这个版本比单线程更快，主要原因是一个线程在写入数据库时，另一个线程可以开始读文件，处理下一个 batch
+* multi-threaded step 那个分支有一个并发错误，我待会儿修复
 
-* 硬件环境：笔记本，CPU i7-9750H，总耗时 4389ms，用了 5 个线程（CPU 核数 - 1）
-
-* 注意这里读文件是同步操作，增加线程数的收益会越来越小
-
-后续再写一个加速版本，集中多个优化。
+* 稍后将提供一份详细的报告，解释具体实现
 
 ## 运行方法
 
