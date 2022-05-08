@@ -4,7 +4,9 @@
 
 * single-thread：该分支使用单线程处理数据，2.9GB 文件需要 1 分半钟
 
-* multithreaded-step：该分支使用多线程 Step，2.9GB 文件需要
+* multithreaded-step：该分支使用多线程 Step，5 个线程处理 2.9GB 文件需要 32 秒左右
+
+* main：该分支使用 hand-craft 的异步多线程，总共也是 5 个线程，2.9GB 文件需要 
 
 # 如何运行
 
