@@ -9,8 +9,6 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Product {
 
-    private Long id;
-
     private String asin;
 
     private String main_cat;

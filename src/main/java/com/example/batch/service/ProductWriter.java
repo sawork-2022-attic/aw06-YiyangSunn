@@ -45,7 +45,9 @@ public class ProductWriter implements ItemWriter<Product> {
     @AfterStep
     public void flush() throws InterruptedException {
         long startTime = System.currentTimeMillis();
-        queue.put(new ArrayList<>());
+        for (int i = 0; i < workerCount; ++i) {
+            queue.put(new ArrayList<>());
+        }
         for (Thread w : workers) {
             w.join();
         }
@@ -65,12 +67,12 @@ public class ProductWriter implements ItemWriter<Product> {
         public void run() {
             while (true) {
                 try {
-                    List<? extends Product> list = queue.peek();
-                    if (list != null && list.size() == 0) {
+                    List<? extends Product> list = queue.take();
+                    if (list.size() == 0) {
                         break;
+                    } else {
+                        productMapper.insertBatch(list);
                     }
-                    list = queue.take();
-                    productMapper.insertBatch(list);
                 } catch (InterruptedException e) {
                     log.error("Unexpected Exception: " + e.getMessage());
                 }

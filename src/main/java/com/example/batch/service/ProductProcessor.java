@@ -8,6 +8,7 @@ import org.springframework.batch.core.annotation.AfterStep;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.ItemProcessor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -42,9 +43,14 @@ public class ProductProcessor implements ItemProcessor<JsonNode, Product> {
         if (title == null || title.isBlank() || title.charAt(0) == '<') {
             return null;
         }
-        List<String> images = product.getImageURLHighRes();
+        // It seems that main_cat can also be null or blank
+        String mainCat = product.getMain_cat();
+        if (mainCat == null || mainCat.isBlank()) {
+            return null;
+        }
         // we need at least one image to display
-        if (images.size() == 0) {
+        List<String> images = product.getImageURLHighRes();
+        if (images == null || images.size() == 0) {
             return null;
         } else if (images.size() > 5) {
             // we only keep the first 5 URLs
@@ -52,7 +58,9 @@ public class ProductProcessor implements ItemProcessor<JsonNode, Product> {
             product.setImageURLHighRes(images);
         }
         List<String> alsoViews = product.getAlso_view();
-        if (alsoViews.size() > 5) {
+        if (alsoViews == null) {
+            product.setAlso_view(new ArrayList<>());
+        } else if (alsoViews.size() > 5) {
             // truncate it
             alsoViews = alsoViews.subList(0, 5);
             product.setAlso_view(alsoViews);
